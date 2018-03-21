@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: elk
+    stack: elk
+  name: elk
+  namespace: logging
+spec:
+  ports:
+  - name: tcp-elastic
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+  - name: tcp-kibana
+    port: 5601
+    protocol: TCP
+    targetPort: 5601
+  - name: tcp-logstash
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    stack: elk
+  sessionAffinity: None
+  type: ClusterIP

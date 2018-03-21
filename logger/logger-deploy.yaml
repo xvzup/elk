@@ -1,0 +1,62 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: logger
+  name: logger
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: logger
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: logger
+    spec:
+      containers:
+      - command: [ "/bin/sh" ]
+        args: ["-c", "i=0; while true; do echo `date` '\t' $i >> /var/log/assured/logger.log; i=$((i+1)); sleep 5; done" ]
+        image: centos
+        imagePullPolicy: Always
+        name: logger
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - name: var-log-assured
+          mountPath: /var/log/assured
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:6.2.3
+        env:
+        - name: ASSURED_ENV 
+          value: "dev"
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /usr/share/filebeat/filebeat.yml
+          subPath: filebeat.yml
+        - name: prospector-config
+          mountPath: /usr/share/filebeat/prospectors.d/
+        - name: var-log-assured
+          mountPath: /var/log/assured
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+       - name: filebeat-config
+         configMap:
+           name: filebeat-config
+       - name: prospector-config
+         configMap:
+           name: prospector-assured-config
+       - name: var-log-assured
+         emptyDir: {}
