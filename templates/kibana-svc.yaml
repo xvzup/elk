@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana 
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "elk.name" . }}
+    chart: {{ template "elk.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: NodePort 
+  ports:
+    - name: kibana-tcp
+      port: {{ .Values.kibana.port }}
+      targetPort: {{ .Values.kibana.port }}
+      nodePort: {{ .Values.kibana.nodeport }}
+      protocol: TCP
+  selector:
+    app: {{ template "elk.name" . }}
+    release: {{ .Release.Name }}

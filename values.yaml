@@ -16,6 +16,7 @@ elasticsearch:
 logstash:
   image: docker.elastic.co/logstash/logstash-oss:6.2.2
   port: 8080
+  nodeport: 30008
 
 kibana:
   image: docker.elastic.co/kibana/kibana-oss:6.2.2
