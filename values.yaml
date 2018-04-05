@@ -6,7 +6,7 @@ pvc:
   storageClassName: ibmc-file-bronze 
   size: 10Gi
 
-namespace: operations
+namespace: logging 
 imagePullSecrets: {}
 
 elasticsearch:
