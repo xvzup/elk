@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config 
+  namespace: {{ .Values.namespace }}
+data:
+{{ (.Files.Glob "logstash.conf").AsConfig | indent 2 }}

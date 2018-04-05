@@ -1,0 +1,49 @@
+# Default values for elk.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+pvc:
+  storageClassName: ibmc-file-bronze 
+  size: 10Gi
+
+namespace: operations
+imagePullSecrets: {}
+
+elasticsearch:
+  image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.2
+  port: 9200
+  
+logstash:
+  image: docker.elastic.co/logstash/logstash-oss:6.2.2
+  port: 8080
+
+kibana:
+  image: docker.elastic.co/kibana/kibana-oss:6.2.2
+  port: 5601
+  nodeport: 30007
+
+replicaCount: 1
+pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

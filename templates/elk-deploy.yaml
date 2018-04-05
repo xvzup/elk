@@ -1,0 +1,78 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "elk.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "elk.name" . }}
+    chart: {{ template "elk.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "elk.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "elk.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      initcontainers:
+        - name: setfilepermissions
+          image: {{ .Values.elasticsearch.image }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ["sh", "-c", "chown -R elasticsearch:elasticsearch /elasticsearch/data" ]
+          volumeMounts:
+          - name: elk-persistent-storage
+            mountPath: /elasticsearch/data
+      containers:
+        - name: elasticsearch 
+          env:
+          - name: ES_JAVA_OPTS
+            value: "-Xms512m -Xmx512m"
+          image: {{ .Values.elasticsearch.image }}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: elastic-tcp 
+              containerPort: {{ .Values.elasticsearch.port }}
+              protocol: TCP
+          volumeMounts:
+          - name: elk-persistent-storage
+            mountPath: /elasticsearch/data
+          - name: elk-config
+            mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+            subPath: elasticsearch.yml
+        - name: kibana
+          image: {{ .Values.kibana.image }}
+          ports:
+            - name: kibana-tcp
+              containerPort: {{ .Values.kibana.port }}
+              protocol: TCP
+          env:
+          - name: ELASTICSEARCH_URL
+            value: "http://localhost:9200"
+        - name: logstash
+          image: {{ .Values.logstash.image }} 
+          ports:
+            - name: logstash-tcp
+              containerPort: {{ .Values.logstash.port }}
+              protocol: TCP
+          volumeMounts:
+          - name: logstash-config
+            mountPath: /usr/share/logstash/pipeline/logstash.conf
+            subPath: logstash.conf
+          imagePullSecrets: {{ .Values.imagePullSecrets }}
+      securityContext: {}
+      volumes:
+      - name: elk-persistent-storage
+        persistentVolumeClaim:
+          claimName: elk-pv-claim
+      - name: elk-config
+        configMap:
+          name: elasticsearch-config
+      - name: logstash-config
+        configMap:
+          name: logstash-config

@@ -1,0 +1,19 @@
+apiVersion: v1 
+kind: PersistentVolumeClaim 
+metadata:
+  name: elk-pv-claim 
+  namespace: {{ .Values.namespace }}
+  annotations:
+    volume.beta.kubernetes.io/storage-class: {{ .Values.pvc.storageClassName }}
+  labels:
+    app: {{ template "elk.name" . }}
+    chart: {{ template "elk.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.pvc.size }}
+
